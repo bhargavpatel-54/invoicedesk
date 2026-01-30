@@ -1,0 +1,757 @@
+================================================================================
+                    BILLING APPLICATION DATABASE SCHEMA
+                           Version 2.0
+                          Date: 2026-01-25
+================================================================================
+
+=======================================
+TABLE 1: companies
+=======================================
+Description: Stores company/user information for authentication
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_name        - VARCHAR(255), NOT NULL
+gst_no             - VARCHAR(255), NOT NULL, UNIQUE
+address            - TEXT, NOT NULL
+phone              - VARCHAR(15), NOT NULL
+email              - VARCHAR(255), NOT NULL, UNIQUE
+business_type      - ENUM('manufacturer', 'retailer', 'wholesaler'), DEFAULT 'retailer'
+is_blocked         - BOOLEAN, DEFAULT FALSE
+subscription_start - DATE, NULL
+subscription_end   - DATE, NULL
+logo               - VARCHAR(255), NULL (file path)
+website            - VARCHAR(255), NULL
+pan_no             - VARCHAR(20), NULL
+bank_name          - VARCHAR(255), NULL
+account_number     - VARCHAR(50), NULL
+ifsc_code          - VARCHAR(20), NULL
+remember_token     - VARCHAR(100), NULL
+created_at         - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at         - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- UNIQUE (email)
+- UNIQUE (gst_no)
+- INDEX idx_email (email)
+- INDEX idx_business_type (business_type)
+- INDEX idx_is_blocked (is_blocked)
+- INDEX idx_subscription_end (subscription_end)
+
+
+=======================================
+TABLE 2: admins
+=======================================
+Description: Stores admin user information for system management
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+name                - VARCHAR(255), NOT NULL
+email               - VARCHAR(255), NOT NULL, UNIQUE
+password            - VARCHAR(255), NOT NULL (hashed)
+remember_token      - VARCHAR(100), NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- UNIQUE (email)
+- INDEX idx_email (email)
+
+
+=======================================
+TABLE 3: customers_vendors
+=======================================
+Description: Stores customer and vendor information
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+type                - ENUM('customer', 'vendor'), NOT NULL, DEFAULT 'customer'
+business_name       - VARCHAR(255), NOT NULL
+contact_person      - VARCHAR(255), NOT NULL
+email               - VARCHAR(255), NULL
+phone               - VARCHAR(15), NOT NULL
+alternate_phone     - VARCHAR(15), NULL
+gst_no              - VARCHAR(255), NULL
+pan_no              - VARCHAR(20), NULL
+billing_address     - TEXT, NOT NULL
+shipping_address    - TEXT, NULL
+city                - VARCHAR(100), NOT NULL
+state               - VARCHAR(100), NOT NULL
+pincode             - VARCHAR(10), NOT NULL
+country             - VARCHAR(100), DEFAULT 'India'
+opening_balance     - DECIMAL(15,2), DEFAULT 0.00
+balance_type        - ENUM('debit', 'credit'), DEFAULT 'debit'
+credit_limit        - DECIMAL(15,2), DEFAULT 0.00
+credit_days         - INT, DEFAULT 0
+is_active           - BOOLEAN, DEFAULT TRUE
+notes               - TEXT, NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- INDEX idx_company_id (company_id)
+- INDEX idx_type (type)
+- INDEX idx_state (state)
+- INDEX idx_business_name (business_name)
+
+
+=======================================
+TABLE 4: products
+=======================================
+Description: Stores physical product information (inventory items)
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+name                - VARCHAR(255), NOT NULL
+product_code        - VARCHAR(50), NULL
+sku                 - VARCHAR(100), NULL (Stock Keeping Unit)
+barcode             - VARCHAR(100), NULL
+description         - TEXT, NULL
+category            - VARCHAR(100), NULL
+brand               - VARCHAR(100), NULL
+manufacturer        - VARCHAR(255), NULL
+unit                - VARCHAR(50), DEFAULT 'pcs' (pcs, kg, ltr, box, meter, etc.)
+hsn_code            - VARCHAR(20), NULL (for GST)
+sac_code            - VARCHAR(20), NULL (Service Accounting Code - if needed)
+tax_rate            - DECIMAL(5,2), DEFAULT 18.00 (GST percentage - 0, 5, 12, 18, 28)
+tax_type            - ENUM('inclusive', 'exclusive'), DEFAULT 'exclusive'
+purchase_price      - DECIMAL(15,2), DEFAULT 0.00
+selling_price       - DECIMAL(15,2), NOT NULL
+mrp                 - DECIMAL(15,2), NULL
+discount_percentage - DECIMAL(5,2), DEFAULT 0.00
+opening_stock       - DECIMAL(15,3), DEFAULT 0.000
+current_stock       - DECIMAL(15,3), DEFAULT 0.000
+committed_stock     - DECIMAL(15,3), DEFAULT 0.000 (reserved in pending orders)
+available_stock     - DECIMAL(15,3), DEFAULT 0.000 (current - committed)
+min_stock_level     - DECIMAL(15,3), DEFAULT 0.000 (reorder point)
+max_stock_level     - DECIMAL(15,3), NULL
+reorder_quantity    - DECIMAL(15,3), NULL (auto-purchase order qty)
+warehouse_location  - VARCHAR(100), NULL (rack/bin location)
+weight              - DECIMAL(10,3), NULL (in kg)
+dimensions          - VARCHAR(100), NULL (LxWxH in cm)
+is_active           - BOOLEAN, DEFAULT TRUE
+is_featured         - BOOLEAN, DEFAULT FALSE
+allow_backorder     - BOOLEAN, DEFAULT FALSE
+image               - VARCHAR(255), NULL (primary product image)
+images              - JSON, NULL (array of additional images)
+attributes          - JSON, NULL (color, size, variant details)
+notes               - TEXT, NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- UNIQUE (company_id, product_code)
+- UNIQUE (company_id, sku)
+- UNIQUE (company_id, barcode)
+- INDEX idx_company_id (company_id)
+- INDEX idx_name (name)
+- INDEX idx_category (category)
+- INDEX idx_brand (brand)
+- INDEX idx_barcode (barcode)
+- INDEX idx_is_active (is_active)
+
+CALCULATED FIELDS (computed in application):
+--------------------------------------------
+- available_stock = current_stock - committed_stock
+- profit_margin = ((selling_price - purchase_price) / selling_price) * 100
+- stock_value = current_stock * purchase_price
+- needs_reorder = (current_stock <= min_stock_level)
+
+
+=======================================
+TABLE 5: sale_invoices
+=======================================
+Description: Stores sales invoice headers
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+customer_id         - BIGINT, NOT NULL (foreign key to customers)
+invoice_number      - VARCHAR(50), NOT NULL
+invoice_date        - DATE, NOT NULL
+due_date            - DATE, NULL
+reference_number    - VARCHAR(50), NULL
+payment_terms       - VARCHAR(100), NULL
+status              - ENUM('draft', 'pending', 'paid', 'partial', 'overdue', 'cancelled'), DEFAULT 'pending'
+subtotal            - DECIMAL(15,2), NOT NULL
+discount_type       - ENUM('percentage', 'fixed'), DEFAULT 'fixed'
+discount_value      - DECIMAL(15,2), DEFAULT 0.00
+discount_amount     - DECIMAL(15,2), DEFAULT 0.00
+tax_amount          - DECIMAL(15,2), DEFAULT 0.00
+shipping_charges    - DECIMAL(15,2), DEFAULT 0.00
+other_charges       - DECIMAL(15,2), DEFAULT 0.00
+round_off           - DECIMAL(10,2), DEFAULT 0.00
+total_amount        - DECIMAL(15,2), NOT NULL
+paid_amount         - DECIMAL(15,2), DEFAULT 0.00
+balance_amount      - DECIMAL(15,2), DEFAULT 0.00
+notes               - TEXT, NULL
+terms_conditions    - TEXT, NULL
+created_by          - BIGINT, NULL (user who created)
+updated_by          - BIGINT, NULL (user who updated)
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:   
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE RESTRICT
+- UNIQUE (company_id, invoice_number)
+- INDEX idx_company_id (company_id)
+- INDEX idx_customer_id (customer_id)
+- INDEX idx_invoice_date (invoice_date)
+- INDEX idx_status (status)
+- INDEX idx_invoice_number (invoice_number)
+
+
+=======================================
+TABLE 6: sale_invoice_items
+=======================================
+Description: Stores line items for sales invoices
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+sale_invoice_id     - BIGINT, NOT NULL (foreign key to sale_invoices)
+product_id          - BIGINT, NOT NULL (foreign key to products)
+description         - TEXT, NULL
+quantity            - DECIMAL(15,3), NOT NULL
+unit                - VARCHAR(50), NOT NULL
+rate                - DECIMAL(15,2), NOT NULL
+discount_percentage - DECIMAL(5,2), DEFAULT 0.00
+discount_amount     - DECIMAL(15,2), DEFAULT 0.00
+taxable_amount      - DECIMAL(15,2), NOT NULL
+tax_rate            - DECIMAL(5,2), DEFAULT 0.00
+tax_amount          - DECIMAL(15,2), DEFAULT 0.00
+total_amount        - DECIMAL(15,2), NOT NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (sale_invoice_id) REFERENCES sale_invoices(id) ON DELETE CASCADE
+- FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+- INDEX idx_sale_invoice_id (sale_invoice_id)
+- INDEX idx_product_id (product_id)
+
+
+=======================================
+TABLE 7: purchase_invoices
+=======================================
+Description: Stores purchase invoice headers
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+vendor_id           - BIGINT, NOT NULL (foreign key to customers where type='vendor')
+invoice_number      - VARCHAR(50), NOT NULL
+invoice_date        - DATE, NOT NULL
+due_date            - DATE, NULL
+vendor_invoice_no   - VARCHAR(50), NULL
+payment_terms       - VARCHAR(100), NULL
+status              - ENUM('draft', 'pending', 'paid', 'partial', 'overdue', 'cancelled'), DEFAULT 'pending'
+subtotal            - DECIMAL(15,2), NOT NULL
+discount_type       - ENUM('percentage', 'fixed'), DEFAULT 'fixed'
+discount_value      - DECIMAL(15,2), DEFAULT 0.00
+discount_amount     - DECIMAL(15,2), DEFAULT 0.00
+tax_amount          - DECIMAL(15,2), DEFAULT 0.00
+shipping_charges    - DECIMAL(15,2), DEFAULT 0.00
+other_charges       - DECIMAL(15,2), DEFAULT 0.00
+round_off           - DECIMAL(10,2), DEFAULT 0.00
+total_amount        - DECIMAL(15,2), NOT NULL
+paid_amount         - DECIMAL(15,2), DEFAULT 0.00
+balance_amount      - DECIMAL(15,2), DEFAULT 0.00
+notes               - TEXT, NULL
+created_by          - BIGINT, NULL
+updated_by          - BIGINT, NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- FOREIGN KEY (vendor_id) REFERENCES customers(id) ON DELETE RESTRICT
+- UNIQUE (company_id, invoice_number)
+- INDEX idx_company_id (company_id)
+- INDEX idx_vendor_id (vendor_id)
+- INDEX idx_invoice_date (invoice_date)
+- INDEX idx_status (status)
+
+
+=======================================
+TABLE 8: purchase_invoice_items
+=======================================
+Description: Stores line items for purchase invoices
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+purchase_invoice_id - BIGINT, NOT NULL (foreign key to purchase_invoices)
+product_id          - BIGINT, NOT NULL (foreign key to products)
+description         - TEXT, NULL
+quantity            - DECIMAL(15,3), NOT NULL
+unit                - VARCHAR(50), NOT NULL
+rate                - DECIMAL(15,2), NOT NULL
+discount_percentage - DECIMAL(5,2), DEFAULT 0.00
+discount_amount     - DECIMAL(15,2), DEFAULT 0.00
+taxable_amount      - DECIMAL(15,2), NOT NULL
+tax_rate            - DECIMAL(5,2), DEFAULT 0.00
+tax_amount          - DECIMAL(15,2), DEFAULT 0.00
+total_amount        - DECIMAL(15,2), NOT NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (purchase_invoice_id) REFERENCES purchase_invoices(id) ON DELETE CASCADE
+- FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+- INDEX idx_purchase_invoice_id (purchase_invoice_id)
+- INDEX idx_product_id (product_id)
+
+
+=======================================
+TABLE 9: payments
+=======================================
+Description: Stores all payment transactions (both received and paid)
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+customer_id         - BIGINT, NULL (foreign key to customers)
+payment_type        - ENUM('received', 'paid'), NOT NULL
+payment_number      - VARCHAR(50), NOT NULL
+payment_date        - DATE, NOT NULL
+amount              - DECIMAL(15,2), NOT NULL
+payment_mode        - ENUM('cash', 'cheque', 'bank_transfer', 'upi', 'card', 'other'), DEFAULT 'cash'
+reference_number    - VARCHAR(100), NULL (cheque no, transaction id, etc.)
+bank_name           - VARCHAR(255), NULL
+sale_invoice_id     - BIGINT, NULL (foreign key to sale_invoices)
+purchase_invoice_id - BIGINT, NULL (foreign key to purchase_invoices)
+notes               - TEXT, NULL
+created_by          - BIGINT, NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
+- FOREIGN KEY (sale_invoice_id) REFERENCES sale_invoices(id) ON DELETE SET NULL
+- FOREIGN KEY (purchase_invoice_id) REFERENCES purchase_invoices(id) ON DELETE SET NULL
+- UNIQUE (company_id, payment_number)
+- INDEX idx_company_id (company_id)
+- INDEX idx_customer_id (customer_id)
+- INDEX idx_payment_type (payment_type)
+- INDEX idx_payment_date (payment_date)
+
+
+=======================================
+TABLE 10: expenses
+=======================================
+Description: Stores business expense records
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+expense_date        - DATE, NOT NULL
+category            - VARCHAR(100), NOT NULL (Rent, Salary, Electricity, etc.)
+sub_category        - VARCHAR(100), NULL
+amount              - DECIMAL(15,2), NOT NULL
+payment_mode        - ENUM('cash', 'cheque', 'bank_transfer', 'upi', 'card', 'other'), DEFAULT 'cash'
+reference_number    - VARCHAR(100), NULL
+vendor_id           - BIGINT, NULL (foreign key to customers where type='vendor')
+description         - TEXT, NULL
+receipt_file        - VARCHAR(255), NULL (file path)
+is_recurring        - BOOLEAN, DEFAULT FALSE
+recurring_frequency - ENUM('daily', 'weekly', 'monthly', 'yearly'), NULL
+notes               - TEXT, NULL
+created_by          - BIGINT, NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- FOREIGN KEY (vendor_id) REFERENCES customers(id) ON DELETE SET NULL
+- INDEX idx_company_id (company_id)
+- INDEX idx_expense_date (expense_date)
+- INDEX idx_category (category)
+
+
+=======================================
+TABLE 11: income
+=======================================
+Description: Stores other income (non-invoice income)
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+income_date         - DATE, NOT NULL
+category            - VARCHAR(100), NOT NULL (Interest, Commission, etc.)
+sub_category        - VARCHAR(100), NULL
+amount              - DECIMAL(15,2), NOT NULL
+payment_mode        - ENUM('cash', 'cheque', 'bank_transfer', 'upi', 'card', 'other'), DEFAULT 'cash'
+reference_number    - VARCHAR(100), NULL
+customer_id         - BIGINT, NULL (foreign key to customers)
+description         - TEXT, NULL
+receipt_file        - VARCHAR(255), NULL
+is_recurring        - BOOLEAN, DEFAULT FALSE
+recurring_frequency - ENUM('daily', 'weekly', 'monthly', 'yearly'), NULL
+notes               - TEXT, NULL
+created_by          - BIGINT, NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
+- INDEX idx_company_id (company_id)
+- INDEX idx_income_date (income_date)
+- INDEX idx_category (category)
+
+
+=======================================
+TABLE 12: documents
+=======================================
+Description: Stores other business documents
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+document_type       - VARCHAR(100), NOT NULL (License, Certificate, Contract, etc.)
+document_name       - VARCHAR(255), NOT NULL
+document_number     - VARCHAR(100), NULL
+issue_date          - DATE, NULL
+expiry_date         - DATE, NULL
+file_path           - VARCHAR(255), NOT NULL
+file_type           - VARCHAR(50), NULL (pdf, jpg, png, docx, etc.)
+file_size           - INT, NULL (in bytes)
+description         - TEXT, NULL
+is_important        - BOOLEAN, DEFAULT FALSE
+reminder_days       - INT, NULL (days before expiry to remind)
+tags                - VARCHAR(255), NULL (comma separated)
+uploaded_by         - BIGINT, NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- INDEX idx_company_id (company_id)
+- INDEX idx_document_type (document_type)
+- INDEX idx_expiry_date (expiry_date)
+
+
+=======================================
+TABLE 13: stock_movements
+=======================================
+Description: Tracks all inventory movements
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+product_id          - BIGINT, NOT NULL (foreign key to products)
+movement_type       - ENUM('in', 'out', 'adjustment'), NOT NULL
+transaction_type    - VARCHAR(50), NOT NULL (sale, purchase, return, adjustment, etc.)
+reference_id        - BIGINT, NULL (invoice id, etc.)
+reference_number    - VARCHAR(50), NULL
+movement_date       - DATE, NOT NULL
+quantity            - DECIMAL(15,3), NOT NULL
+unit                - VARCHAR(50), NOT NULL
+rate                - DECIMAL(15,2), DEFAULT 0.00
+total_value         - DECIMAL(15,2), DEFAULT 0.00
+stock_before        - DECIMAL(15,3), NOT NULL
+stock_after         - DECIMAL(15,3), NOT NULL
+notes               - TEXT, NULL
+created_by          - BIGINT, NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+- INDEX idx_company_id (company_id)
+- INDEX idx_product_id (product_id)
+- INDEX idx_movement_date (movement_date)
+- INDEX idx_movement_type (movement_type)
+
+
+=======================================
+TABLE 14: settings
+=======================================
+Description: Stores application settings and preferences
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+setting_key         - VARCHAR(100), NOT NULL
+setting_value       - TEXT, NULL
+setting_type        - ENUM('string', 'number', 'boolean', 'json'), DEFAULT 'string'
+description         - VARCHAR(255), NULL
+is_system           - BOOLEAN, DEFAULT FALSE
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+updated_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- UNIQUE (company_id, setting_key)
+- INDEX idx_company_id (company_id)
+- INDEX idx_setting_key (setting_key)
+
+
+=======================================
+TABLE 15: audit_logs
+=======================================
+Description: Tracks all important system activities
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NULL (foreign key to companies)
+user_id             - BIGINT, NULL (user who performed action)
+action              - VARCHAR(100), NOT NULL (created, updated, deleted, etc.)
+module              - VARCHAR(50), NOT NULL (invoice, customer, product, etc.)
+record_id           - BIGINT, NULL (id of affected record)
+ip_address          - VARCHAR(45), NULL
+user_agent          - VARCHAR(255), NULL
+old_values          - JSON, NULL
+new_values          - JSON, NULL
+description         - TEXT, NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- INDEX idx_company_id (company_id)
+- INDEX idx_module (module)
+- INDEX idx_created_at (created_at)
+
+
+=======================================
+TABLE 16: notifications
+=======================================
+Description: Stores user notifications
+Primary Key: id
+
+COLUMNS:
+--------
+id                  - BIGINT, AUTO_INCREMENT, PRIMARY KEY
+company_id          - BIGINT, NOT NULL (foreign key to companies)
+type                - VARCHAR(50), NOT NULL (invoice_due, low_stock, payment_received, etc.)
+title               - VARCHAR(255), NOT NULL
+message             - TEXT, NOT NULL
+link                - VARCHAR(255), NULL
+is_read             - BOOLEAN, DEFAULT FALSE
+read_at             - TIMESTAMP, NULL
+priority            - ENUM('low', 'medium', 'high'), DEFAULT 'medium'
+expires_at          - TIMESTAMP, NULL
+created_at          - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP
+
+CONSTRAINTS:
+-----------
+- PRIMARY KEY (id)
+- FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+- INDEX idx_company_id (company_id)
+- INDEX idx_is_read (is_read)
+- INDEX idx_created_at (created_at)
+
+
+================================================================================
+                        DATABASE RELATIONSHIPS
+================================================================================
+
+ONE-TO-MANY RELATIONSHIPS:
+--------------------------
+1. companies -> customers (one company has many customers)
+2. companies -> products (one company has many products)
+3. companies -> sale_invoices (one company has many sales)
+4. companies -> purchase_invoices (one company has many purchases)
+5. companies -> payments (one company has many payments)
+6. customers -> sale_invoices (one customer has many sales)
+7. customers -> purchase_invoices (one vendor has many purchases)
+8. sale_invoices -> sale_invoice_items (one invoice has many items)
+9. purchase_invoices -> purchase_invoice_items (one invoice has many items)
+10. products -> sale_invoice_items (one product in many sales)
+11. products -> purchase_invoice_items (one product in many purchases)
+12. products -> stock_movements (one product has many movements)
+
+
+OPTIONAL RELATIONSHIPS:
+-----------------------
+1. payments -> sale_invoices (optional, for invoice payments)
+2. payments -> purchase_invoices (optional, for bill payments)
+3. expenses -> customers (optional, vendor reference)
+4. income -> customers (optional, customer reference)
+
+
+================================================================================
+                        BUSINESS RULES & VALIDATIONS
+================================================================================
+
+1. INVOICE NUMBERING:
+   - Must be unique per company
+   - Should follow format: INV-YYYY-XXXX (customizable)
+   - Auto-increment within financial year
+
+2. STOCK MANAGEMENT:
+   - current_stock must never go negative (unless allowing backorders)
+   - Stock movements must update product.current_stock
+   - Calculate: stock_after = stock_before ± quantity
+
+3. PAYMENT TRACKING:
+   - invoice.paid_amount = SUM of related payments
+   - invoice.balance_amount = total_amount - paid_amount
+   - Status auto-updates based on payment
+
+4. GST CALCULATION:
+   - tax_amount = taxable_amount * (tax_rate / 100)
+   - total_amount = taxable_amount + tax_amount
+
+5. INVOICE STATUS:
+   - draft: Not finalized
+   - pending: Finalized, awaiting payment
+   - partial: Partially paid
+   - paid: Fully paid
+   - overdue: Past due date, unpaid
+   - cancelled: Cancelled invoice
+
+6. DATA INTEGRITY:
+   - Soft delete for critical records (add deleted_at column if needed)
+   - Cascade delete for dependent records
+   - Restrict delete for referenced records
+
+
+================================================================================
+                        INDEXES & PERFORMANCE
+================================================================================
+
+PRIMARY INDEXES:
+- All id columns (auto-created with PRIMARY KEY)
+
+FOREIGN KEY INDEXES:
+- All foreign key columns for join performance
+
+SEARCH INDEXES:
+- customer names, product names for search functionality
+- invoice numbers for quick lookup
+- dates for reporting and filtering
+
+COMPOSITE INDEXES (if needed):
+- (company_id, invoice_date) for date-range reports
+- (company_id, status) for status filtering
+- (product_id, movement_date) for stock reports
+
+
+================================================================================
+                         IMPLEMENTED FEATURES (Version 2.0)
+================================================================================
+
+1. ADMIN PANEL:
+   - Separate admin authentication system
+   - Admin users can manage all companies
+   - View company details and statistics
+   - Block/unblock companies
+   - Delete companies
+   - Subscription management interface
+
+2. SUBSCRIPTION MANAGEMENT:
+   - Companies can have subscription start and end dates
+   - Automatic expiry detection
+   - Manual blocking capability
+   - Subscription status tracking (Active/Expired/Blocked)
+   - Companies redirected to renewal page when blocked or expired
+   - Admin can set custom subscription periods
+
+3. BUSINESS TYPE DIFFERENTIATION:
+   - Three business types: Manufacturer, Retailer, Wholesaler
+   - Selected during company registration
+   - Displayed in admin dashboard with color-coded badges
+   - Foundation for type-specific features:
+     * Manufacturer: Production, BOM, raw materials management
+     * Retailer: POS, customer management, retail pricing
+     * Wholesaler: Bulk orders, distributors, volume pricing
+
+4. AUTHENTICATION ENHANCEMENTS:
+   - OTP-based login for companies
+   - Separate admin guard for admin users
+   - Email/Password authentication for admins
+   - Protected routes for both user types
+
+
+================================================================================
+                        FUTURE ENHANCEMENTS
+================================================================================
+
+1. Add support for:
+   - Multiple currencies
+   - Multi-warehouse inventory
+   - Delivery challans
+   - Quotations & Proforma invoices
+   - Purchase orders
+   - Employee/User management
+   - Role-based access control
+
+2. Additional tables may include:
+   - warehouses
+   - users (separate from companies)
+   - roles & permissions
+   - quotations
+   - delivery_notes
+   - purchase_orders
+   - tax_categories
+
+
+================================================================================
+                              END OF SCHEMA
+================================================================================
