@@ -4,9 +4,11 @@
 
 @section('content')
 
+<!-- Page Header -->
 <div class="card border-0 shadow-sm card-dashboard mb-4">
     <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <!-- Desktop Header (Big Screen Only) -->
+        <div class="d-none d-md-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <h5 class="mb-2 fw-bold" style="background: linear-gradient(135deg, #1a202c 0%, #00c853 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                     <i class="bi bi-folder2-open me-2"></i>Other Documents
@@ -18,6 +20,19 @@
             <div class="d-flex gap-2">
                 <button class="btn btn-white border shadow-sm btn-sm"><i class="bi bi-upload me-1"></i> Upload</button>
                 <button class="btn btn-primary text-white btn-sm px-3 fw-semibold shadow"><i class="bi bi-plus-lg me-1"></i> Add Document</button>
+            </div>
+        </div>
+
+        <!-- Mobile Header (Small Screen Only) -->
+        <div class="d-md-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 fw-bold" style="background: linear-gradient(135deg, #1a202c 0%, #00c853 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <i class="bi bi-folder2-open me-2"></i>Docs
+                </h5>
+                <button class="btn btn-primary text-white btn-sm px-3 fw-semibold shadow"><i class="bi bi-upload"></i></button>
+            </div>
+            <div class="small text-muted bg-light p-2 rounded-3 text-center">
+                Total Documents: <b class="text-dark">12</b>
             </div>
         </div>
     </div>

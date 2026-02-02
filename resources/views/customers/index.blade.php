@@ -1,154 +1,230 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customers & Vendors - InvoiceDesk</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50">
+@extends('layouts.app')
 
-    <!-- Header -->
-    @include('layouts.header')
+@section('title', 'Customers & Vendors')
 
-    <div class="container mx-auto px-6 py-8">
-        
-        <!-- Page Title & Actions -->
-        <div class="flex justify-between items-center mb-6">
+@section('content')
+
+<!-- Page Header -->
+<div class="card border-0 shadow-sm card-dashboard mb-4">
+    <div class="card-body p-4">
+        <!-- Desktop Header (Big Screen Only) -->
+        <div class="d-none d-md-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Customers & Vendors</h1>
-                <p class="text-gray-600 mt-1">Manage your customers and vendors</p>
-            </div>
-            <a href="{{ route('customers.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold shadow-md transition-colors flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Add New
-            </a>
-        </div>
-
-        <!-- Success Message -->
-        @if(session('success'))
-            <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-r-lg mb-6 flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <!-- Filters & Search -->
-        <div class="bg-white rounded-xl shadow-md p-4 mb-6">
-            <form action="{{ route('customers.index') }}" method="GET" class="flex flex-wrap gap-4">
-                <!-- Search -->
-                <div class="flex-1 min-w-[200px]">
-                    <input type="text" name="search" value="{{ request('search') }}" 
-                           placeholder="Search by name, phone, email..." 
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <h5 class="mb-2 fw-bold" style="background: linear-gradient(135deg, #1a202c 0%, #00c853 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <i class="bi bi-people-fill me-2"></i>Customers & Vendors
+                </h5>
+                <div class="d-flex gap-4 mt-2 small text-muted">
+                    <span><i class="bi bi-circle-fill text-primary me-1" style="font-size: 8px;"></i>Total: <b class="text-dark">{{ $totalCount }}</b></span>
+                    <span><i class="bi bi-circle-fill text-success me-1" style="font-size: 8px;"></i>Customer: <b class="text-dark">{{ $customerCount }}</b></span>
+                    <span><i class="bi bi-circle-fill text-warning me-1" style="font-size: 8px;"></i>Vendor: <b class="text-dark">{{ $vendorCount }}</b></span>
                 </div>
-                
-                <!-- Type Filter -->
-                <select name="type" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">All Types</option>
-                    <option value="customer" {{ request('type') == 'customer' ? 'selected' : '' }}>Customers</option>
-                    <option value="vendor" {{ request('type') == 'vendor' ? 'selected' : '' }}>Vendors</option>
-                </select>
-                
-                <!-- Status Filter -->
-                <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">All Status</option>
-                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                    <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                </select>
-                
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
-                    Filter
-                </button>
-                
-                @if(request()->hasAny(['search', 'type', 'status']))
-                    <a href="{{ route('customers.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold transition-colors">
-                        Clear
-                    </a>
-                @endif
-            </form>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <form action="{{ route('customers.index') }}" method="GET" class="d-flex gap-1 mb-0">
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="Search..." style="width: 150px;">
+                    <select name="type" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 120px;">
+                        <option value="">All Types</option>
+                        <option value="customer" {{ request('type') == 'customer' ? 'selected' : '' }}>Customers</option>
+                        <option value="vendor" {{ request('type') == 'vendor' ? 'selected' : '' }}>Vendors</option>
+                    </select>
+                    <button type="submit" class="btn btn-white border shadow-sm btn-sm">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+                <a href="{{ route('customers.create') }}" class="btn btn-primary text-white btn-sm px-3 fw-semibold shadow">
+                    <i class="bi bi-plus-lg me-1"></i> Add New
+                </a>
+            </div>
         </div>
 
-        <!-- Customers Table -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Business Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Contact Person</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Phone</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">City</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($customers as $customer)
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $customer->type === 'customer' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
-                                        {{ ucfirst($customer->type) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="font-medium text-gray-900">{{ $customer->business_name }}</div>
-                                    @if($customer->gst_no)
-                                        <div class="text-xs text-gray-500">GST: {{ $customer->gst_no }}</div>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $customer->contact_person }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $customer->phone }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $customer->city }}, {{ $customer->state }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $customer->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                        {{ $customer->is_active ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div class="flex items-center justify-end gap-2">
-                                        <a href="{{ route('customers.edit', $customer) }}" class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors">
-                                            Edit
-                                        </a>
-                                        <form action="{{ route('customers.destroy', $customer) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this {{ $customer->type }}?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-800 px-3 py-1 rounded-md hover:bg-red-50 transition-colors">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                    <p class="text-lg font-medium">No customers or vendors found</p>
-                                    <p class="text-sm text-gray-400 mt-1">Click "Add New" to create your first entry</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+        <!-- Mobile Header (Small Screen Only) -->
+        <div class="d-md-none text-center">
+            <div class="d-flex justify-content-between align-items-center mb-3 text-start">
+                <h5 class="mb-0 fw-bold" style="background: linear-gradient(135deg, #1a202c 0%, #00c853 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <i class="bi bi-people-fill me-2"></i>Contacts
+                </h5>
+                <a href="{{ route('customers.create') }}" class="btn btn-primary text-white btn-sm px-3 fw-semibold shadow">
+                    <i class="bi bi-plus-lg me-1"></i> New
+                </a>
+            </div>
+            
+            <div class="d-flex gap-2 mb-3">
+                <form action="{{ route('customers.index') }}" method="GET" class="d-flex gap-1 mb-0 flex-grow-1">
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="Search...">
+                    <button type="submit" class="btn btn-white border shadow-sm btn-sm">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+                <select name="type" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 110px;">
+                    <option value="">Type</option>
+                    <option value="customer" {{ request('type') == 'customer' ? 'selected' : '' }}>Customer</option>
+                    <option value="vendor" {{ request('type') == 'vendor' ? 'selected' : '' }}>Vendor</option>
+                </select>
             </div>
 
-            <!-- Pagination -->
-            @if($customers->hasPages())
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                    {{ $customers->links() }}
-                </div>
-            @endif
+            <div class="d-flex justify-content-around small text-muted bg-light p-2 rounded-3">
+                <span>Total: <b class="text-dark">{{ $totalCount }}</b></span>
+                <span>Cust: <b class="text-dark">{{ $customerCount }}</b></span>
+                <span>Vend: <b class="text-dark">{{ $vendorCount }}</b></span>
+            </div>
         </div>
-
     </div>
+</div>
 
-</body>
-</html>
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+<!-- Customers Table -->
+<div class="card border-0 shadow-sm card-dashboard">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light d-none d-md-table-header-group">
+                <tr>
+                    <th class="border-0 px-4 py-3 small text-muted uppercase fw-bold">Type</th>
+                    <th class="border-0 py-3 small text-muted uppercase fw-bold">Business Name</th>
+                    <th class="border-0 py-3 small text-muted uppercase fw-bold">Contact</th>
+                    <th class="border-0 py-3 small text-muted uppercase fw-bold">Location</th>
+                    <th class="border-0 py-3 small text-muted uppercase fw-bold text-center">Status</th>
+                    <th class="border-0 px-4 py-3 small text-muted uppercase fw-bold text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="contact-list-body">
+                @forelse($customers as $customer)
+                <tr class="contact-row d-none d-md-table-row">
+                    <td class="px-4">
+                        <span class="badge {{ $customer->type === 'customer' ? 'bg-info' : 'bg-purple' }} rounded-pill px-3 py-1 fw-medium" style="font-size: 10px; {{ $customer->type === 'vendor' ? 'background-color: #6f42c1 !important;' : '' }}">
+                            {{ strtoupper($customer->type) }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="fw-bold text-dark">{{ $customer->business_name }}</div>
+                        @if($customer->gst_no)
+                            <small class="text-muted">GST: {{ $customer->gst_no }}</small>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="text-dark small"><i class="bi bi-person me-1"></i>{{ $customer->contact_person }}</div>
+                        <small class="text-muted"><i class="bi bi-phone me-1"></i>{{ $customer->phone }}</small>
+                    </td>
+                    <td>
+                        <div class="text-dark small">{{ $customer->city }}</div>
+                        <small class="text-muted">{{ $customer->state }}</small>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge {{ $customer->is_active ? 'bg-success' : 'bg-danger' }} rounded-pill px-3 py-1 fw-medium" style="font-size: 10px;">
+                            {{ $customer->is_active ? 'ACTIVE' : 'INACTIVE' }}
+                        </span>
+                    </td>
+                    <td class="px-4 text-end">
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                <li><a class="dropdown-item" href="{{ route('customers.edit', $customer) }}"><i class="bi bi-pencil me-2"></i> Edit</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form action="{{ route('customers.destroy', $customer) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this {{ $customer->type }}?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i> Delete</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Mobile Card View -->
+                <tr class="d-md-none">
+                    <td colspan="6" class="p-0">
+                        <div class="mobile-contact-card p-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <span class="badge {{ $customer->type === 'customer' ? 'bg-info' : 'bg-purple' }} rounded-pill px-2 py-1 fw-medium mb-2" style="font-size: 9px; {{ $customer->type === 'vendor' ? 'background-color: #6f42c1 !important;' : '' }}">
+                                        {{ strtoupper($customer->type) }}
+                                    </span>
+                                    <div class="fw-bold text-dark">{{ $customer->business_name }}</div>
+                                    <div class="small text-muted mt-1">
+                                        <i class="bi bi-person me-1"></i>{{ $customer->contact_person }}
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                        <li><a class="dropdown-item" href="{{ route('customers.edit', $customer) }}"><i class="bi bi-pencil me-2"></i> Edit</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="{{ route('customers.destroy', $customer) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i> Delete</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div class="small text-muted">
+                                    <i class="bi bi-geo-alt me-1"></i>{{ $customer->city }}
+                                </div>
+                                <span class="badge {{ $customer->is_active ? 'bg-success' : 'bg-danger' }} rounded-pill px-2 py-1 fw-medium" style="font-size: 9px;">
+                                    {{ $customer->is_active ? 'ACTIVE' : 'INACTIVE' }}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                
+                @empty
+                <tr>
+                    <td colspan="6" class="py-5 text-center text-muted">
+                        <i class="bi bi-people fs-1 d-block mb-3 opacity-25"></i>
+                        No customers or vendors found. <a href="{{ route('customers.create') }}">Add your first one</a>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    @if($customers->hasPages())
+    <div class="card-footer bg-white border-0 px-4 py-3">
+        {{ $customers->links() }}
+    </div>
+    @endif
+</div>
+
+<style>
+    .uppercase { text-transform: uppercase; letter-spacing: 0.5px; }
+    .card-dashboard { border-radius: 12px; position: relative; z-index: 1; }
+    
+    .table-responsive { 
+        overflow: visible !important;
+        position: relative;
+    }
+    
+    .dropdown-menu { 
+        z-index: 9999 !important;
+        border: none !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+        border-radius: 10px !important;
+    }
+    
+    .contact-row:hover {
+        background-color: rgba(59, 130, 246, 0.03) !important;
+    }
+
+    @media (max-width: 768px) {
+        .card-body.p-4 { padding: 1.25rem !important; }
+        .mobile-contact-card { transition: background-color 0.2s; }
+        .mobile-contact-card:active { background-color: #f8f9fa; }
+    }
+</style>
+
+@endsection

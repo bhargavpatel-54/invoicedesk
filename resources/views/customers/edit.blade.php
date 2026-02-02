@@ -1,202 +1,220 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Customer / Vendor')
+@section('title', 'Edit Record')
 
 @section('content')
 
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="card border-0 shadow-sm card-dashboard mb-4">
-        <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-1 fw-bold" style="background: linear-gradient(135deg, #1a202c 0%, #00c853 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                        <i class="bi bi-pencil-square me-2"></i>Edit {{ ucfirst($customer->type) }}: {{ $customer->business_name }}
-                    </h5>
-                    <p class="text-muted small mb-0">Update the details below to modify the record</p>
-                </div>
+<!-- Page Header -->
+<div class="card border-0 shadow-sm card-dashboard mb-4">
+    <div class="card-body p-4">
+        <!-- Desktop Header -->
+        <div class="d-none d-md-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h5 class="mb-1 fw-bold" style="background: linear-gradient(135deg, #1a202c 0%, #00c853 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <i class="bi bi-pencil-square me-2"></i>Edit {{ ucfirst($customer->type) }}
+                </h5>
+                <p class="text-muted small mb-0">Updating profile for <b>{{ $customer->business_name }}</b></p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('customers.show', $customer) }}" class="btn btn-white border shadow-sm btn-sm px-3 text-primary">
+                    <i class="bi bi-eye me-1"></i> View
+                </a>
                 <a href="{{ route('customers.index') }}" class="btn btn-white border shadow-sm btn-sm px-3">
-                    <i class="bi bi-arrow-left me-1"></i> Back to List
+                    <i class="bi bi-arrow-left me-1"></i> Back
                 </a>
             </div>
         </div>
-    </div>
 
-    @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card border-0 shadow-sm card-dashboard">
-                <div class="card-body p-4">
-                    <form action="{{ route('customers.update', $customer) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        
-                        <div class="row g-4">
-                            <!-- Type Selection -->
-                            <div class="col-md-12 mb-2">
-                                <label class="fw-bold mb-3 d-block text-muted small uppercase">Type Selection</label>
-                                <div class="d-flex gap-3">
-                                    <div class="form-check custom-radio-box">
-                                        <input class="form-check-input" type="radio" name="type" id="type_customer" value="customer" {{ (old('type') ?? $customer->type) == 'customer' ? 'checked' : '' }}>
-                                        <label class="form-check-label px-4 py-3 rounded border w-100 text-center cursor-pointer" for="type_customer">
-                                            <i class="bi bi-person me-2"></i>Customer
-                                        </label>
-                                    </div>
-                                    <div class="form-check custom-radio-box">
-                                        <input class="form-check-input" type="radio" name="type" id="type_vendor" value="vendor" {{ (old('type') ?? $customer->type) == 'vendor' ? 'checked' : '' }}>
-                                        <label class="form-check-label px-4 py-3 rounded border w-100 text-center cursor-pointer" for="type_vendor">
-                                            <i class="bi bi-shop me-2"></i>Vendor
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr class="mt-4 mb-2 opacity-25">
-
-                            <!-- Basic Info -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold small text-muted">Business Name *</label>
-                                <input type="text" name="business_name" class="form-control" value="{{ old('business_name', $customer->business_name) }}" required placeholder="Enter business name">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold small text-muted">Contact Person *</label>
-                                <input type="text" name="contact_person" class="form-control" value="{{ old('contact_person', $customer->contact_person) }}" required placeholder="Enter contact person name">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">Phone *</label>
-                                <input type="text" name="phone" class="form-control" value="{{ old('phone', $customer->phone) }}" required placeholder="Primary phone number">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">Alternate Phone</label>
-                                <input type="text" name="alternate_phone" class="form-control" value="{{ old('alternate_phone', $customer->alternate_phone) }}" placeholder="Optional alternate numbers">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">Email Address</label>
-                                <input type="email" name="email" class="form-control" value="{{ old('email', $customer->email) }}" placeholder="example@business.com">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold small text-muted">GST Number</label>
-                                <input type="text" name="gst_no" class="form-control" value="{{ old('gst_no', $customer->gst_no) }}" placeholder="e.g. 24XXXXX1234X1Z1">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold small text-muted">PAN Number</label>
-                                <input type="text" name="pan_no" class="form-control" value="{{ old('pan_no', $customer->pan_no) }}" placeholder="e.g. ABCDE1234F">
-                            </div>
-
-                            <hr class="mt-4 mb-2 opacity-25">
-
-                            <!-- Address Info -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">Address 1 *</label>
-                                <input type="text" name="billing_address" class="form-control" value="{{ old('billing_address', $customer->billing_address) }}" required placeholder="Street address, area...">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">Address 2</label>
-                                <input type="text" name="address_2" class="form-control" value="{{ old('address_2', $customer->address_2) }}" placeholder="Building, Floor, etc.">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">Landmark</label>
-                                <input type="text" name="landmark" class="form-control" value="{{ old('landmark', $customer->landmark) }}" placeholder="Near by...">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">City *</label>
-                                <input type="text" name="city" class="form-control" value="{{ old('city', $customer->city) }}" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">State *</label>
-                                <input type="text" name="state" class="form-control" value="{{ old('state', $customer->state) }}" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">Pincode *</label>
-                                <input type="text" name="pincode" class="form-control" value="{{ old('pincode', $customer->pincode) }}" required>
-                            </div>
-
-                            <hr class="mt-4 mb-2 opacity-25">
-
-                            <!-- Financial Info -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">Opening Balance</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0">₹</span>
-                                    <input type="number" step="0.01" name="opening_balance" class="form-control border-start-0" value="{{ old('opening_balance', $customer->opening_balance) }}">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">Balance Type</label>
-                                <select name="balance_type" class="form-select">
-                                    <option value="debit" {{ (old('balance_type') ?? $customer->balance_type) == 'debit' ? 'selected' : '' }}>Debit (Payable)</option>
-                                    <option value="credit" {{ (old('balance_type') ?? $customer->balance_type) == 'credit' ? 'selected' : '' }}>Credit (Receivable)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-muted">Credit Limit</label>
-                                <input type="number" name="credit_limit" class="form-control" value="{{ old('credit_limit', $customer->credit_limit) }}">
-                            </div>
-
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label fw-semibold small text-muted">Status</label>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $customer->is_active) ? 'checked' : '' }}>
-                                    <label class="form-check-label fw-semibold text-dark" for="is_active">Active Account</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-12 mt-4 text-end">
-                                <a href="{{ route('customers.index') }}" class="btn btn-white border shadow-sm px-4 me-2">Cancel</a>
-                                <button type="submit" class="btn btn-primary text-white px-5 fw-bold shadow">
-                                    <i class="bi bi-save me-2"></i>Update Record
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+        <!-- Mobile Header -->
+        <div class="d-md-none text-center">
+            <h5 class="mb-2 fw-bold">Edit Record</h5>
+            <p class="text-muted extra-small mb-3">{{ $customer->business_name }}</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{{ route('customers.index') }}" class="btn btn-white border shadow-sm btn-sm w-100">
+                    <i class="bi bi-arrow-left me-1"></i> Cancel
+                </a>
+                <a href="{{ route('customers.show', $customer) }}" class="btn btn-white border shadow-sm btn-sm">
+                    <i class="bi bi-eye text-primary"></i>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
-@endsection
+<div class="card border-0 shadow-sm card-dashboard">
+    <div class="card-body p-4">
+        <form action="{{ route('customers.update', $customer) }}" method="POST">
+            @csrf
+            @method('PUT')
+            
+            @if ($errors->any())
+                <div class="alert alert-danger border-0 shadow-sm mb-4">
+                    <ul class="mb-0 small">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-@section('extra-css')
+            <div class="row g-4">
+                <!-- Type Selection -->
+                <div class="col-12 text-center text-md-start mb-2">
+                    <label class="fw-bold mb-3 d-block text-muted extra-small uppercase">Engagement Type</label>
+                    <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-3">
+                        <div class="custom-radio-box flex-fill flex-md-initial" style="min-width: 150px;">
+                            <input class="form-check-input" type="radio" name="type" id="type_customer" value="customer" {{ (old('type') ?? $customer->type) == 'customer' ? 'checked' : '' }}>
+                            <label class="form-check-label px-4 py-3 rounded-3 border w-100 text-center cursor-pointer shadow-sm" for="type_customer">
+                                <i class="bi bi-person me-2"></i>Customer
+                            </label>
+                        </div>
+                        <div class="custom-radio-box flex-fill flex-md-initial" style="min-width: 150px;">
+                            <input class="form-check-input" type="radio" name="type" id="type_vendor" value="vendor" {{ (old('type') ?? $customer->type) == 'vendor' ? 'checked' : '' }}>
+                            <label class="form-check-label px-4 py-3 rounded-3 border w-100 text-center cursor-pointer shadow-sm" for="type_vendor">
+                                <i class="bi bi-shop me-2"></i>Vendor
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12"><hr class="my-0 opacity-25"></div>
+
+                <!-- Basic Info -->
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-muted uppercase">Business Name *</label>
+                    <input type="text" name="business_name" class="form-control" value="{{ old('business_name', $customer->business_name) }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-muted uppercase">Contact Person *</label>
+                    <input type="text" name="contact_person" class="form-control" value="{{ old('contact_person', $customer->contact_person) }}" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">Phone *</label>
+                    <input type="tel" name="phone" class="form-control" value="{{ old('phone', $customer->phone) }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">Alt Phone</label>
+                    <input type="tel" name="alternate_phone" class="form-control" value="{{ old('alternate_phone', $customer->alternate_phone) }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">Email Address</label>
+                    <input type="email" name="email" class="form-control" value="{{ old('email', $customer->email) }}">
+                </div>
+
+                <div class="col-6 col-md-6">
+                    <label class="form-label fw-bold small text-muted uppercase">GSTIN</label>
+                    <input type="text" name="gst_no" class="form-control uppercase" value="{{ old('gst_no', $customer->gst_no) }}">
+                </div>
+                <div class="col-6 col-md-6">
+                    <label class="form-label fw-bold small text-muted uppercase">PAN Number</label>
+                    <input type="text" name="pan_no" class="form-control uppercase" value="{{ old('pan_no', $customer->pan_no) }}">
+                </div>
+
+                <div class="col-12"><hr class="my-0 opacity-25"></div>
+
+                <!-- Address Info -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">Street Address *</label>
+                    <input type="text" name="billing_address" class="form-control" value="{{ old('billing_address', $customer->billing_address) }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">Area / Building</label>
+                    <input type="text" name="address_2" class="form-control" value="{{ old('address_2', $customer->address_2) }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">Landmark</label>
+                    <input type="text" name="landmark" class="form-control" value="{{ old('landmark', $customer->landmark) }}">
+                </div>
+                <div class="col-4 col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">City *</label>
+                    <input type="text" name="city" class="form-control" value="{{ old('city', $customer->city) }}" required>
+                </div>
+                <div class="col-4 col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">State *</label>
+                    <input type="text" name="state" class="form-control" value="{{ old('state', $customer->state) }}" required>
+                </div>
+                <div class="col-4 col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">Pincode *</label>
+                    <input type="text" name="pincode" class="form-control" value="{{ old('pincode', $customer->pincode) }}" required>
+                </div>
+
+                <div class="col-12"><hr class="my-0 opacity-25"></div>
+
+                <!-- Financial Info -->
+                <div class="col-6 col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">Opening Balance</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0 bg-light fw-bold small">₹</span>
+                        <input type="number" step="0.01" name="opening_balance" class="form-control" value="{{ old('opening_balance', $customer->opening_balance) }}">
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">Balance Type</label>
+                    <select name="balance_type" class="form-select">
+                        <option value="debit" {{ (old('balance_type') ?? $customer->balance_type) == 'debit' ? 'selected' : '' }}>Debit (Payable)</option>
+                        <option value="credit" {{ (old('balance_type') ?? $customer->balance_type) == 'credit' ? 'selected' : '' }}>Credit (Receivable)</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-bold small text-muted uppercase">Credit limit</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0 bg-light fw-bold small">₹</span>
+                        <input type="number" name="credit_limit" class="form-control" value="{{ old('credit_limit', $customer->credit_limit) }}">
+                    </div>
+                </div>
+
+                <div class="col-12 mt-4">
+                    <div class="form-check form-switch bg-light p-3 rounded-3 ps-5">
+                        <input class="form-check-input ms-n4" type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $customer->is_active) ? 'checked' : '' }}>
+                        <label class="form-check-label small fw-bold uppercase text-dark ms-2" for="is_active">Account Active Status</label>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-5">
+                    <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
+                        <a href="{{ route('customers.index') }}" class="btn btn-white border px-4 py-2 order-2 order-md-1">Cancel Changes</a>
+                        <button type="submit" class="btn btn-primary px-5 py-2 fw-bold shadow order-1 order-md-2">
+                            <i class="bi bi-check-circle-fill me-2"></i>UPDATE RECORD
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <style>
+    .uppercase { text-transform: uppercase; letter-spacing: 0.5px; }
+    .extra-small { font-size: 11px; }
+    .btn-white { background: #fff; color: #1a202c; }
+    
     .custom-radio-box {
-        flex: 1;
         position: relative;
-        padding-left: 0;
     }
     .custom-radio-box .form-check-input {
         position: absolute;
         opacity: 0;
+        width: 100%;
+        height: 100%;
         cursor: pointer;
+        z-index: 10;
+        margin: 0;
     }
     .custom-radio-box .form-check-label {
         background: #fff;
         transition: all 0.2s;
         border: 2px solid #edf2f7 !important;
         color: #718096;
+        display: block;
     }
     .custom-radio-box .form-check-input:checked + .form-check-label {
         border-color: #00c853 !important;
         background: rgba(0, 200, 83, 0.05);
         color: #00c853;
         font-weight: 600;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #00c853;
-        box-shadow: 0 0 0 0.2rem rgba(0, 200, 83, 0.15);
+        box-shadow: 0 4px 12px rgba(0, 200, 83, 0.1) !important;
     }
 </style>
+
 @endsection

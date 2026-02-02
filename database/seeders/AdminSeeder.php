@@ -12,10 +12,12 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Admin::create([
-            'name' => 'Admin',
-            'email' => 'admin@invoicedesk.com',
-            'password' => 'admin123', // Will be automatically hashed
-        ]);
+        \App\Models\Admin::updateOrCreate(
+            ['email' => 'admin@invoicedesk.com'],
+            [
+                'name' => 'Admin',
+                'password' => 'admin123',
+            ]
+        );
     }
 }

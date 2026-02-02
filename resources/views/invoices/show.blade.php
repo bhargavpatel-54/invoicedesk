@@ -49,7 +49,18 @@
     </style>
 </head>
 <body>
-    <!-- Top Bar with Buttons -->
+    <!-- Top Bar with Buttons - Hidden if in iframe -->
+    <script>
+        if (window.self !== window.top) {
+            document.body.classList.add('in-iframe');
+        }
+    </script>
+    <style>
+        .in-iframe .top-bar { display: none !important; }
+        .in-iframe body { padding: 0 !important; background: white !important; }
+        .in-iframe .invoice-container { box-shadow: none !important; border-radius: 0 !important; }
+    </style>
+
     <div class="top-bar">
         <!-- Left Side: Back Button -->
         <a href="{{ route('invoices.index') }}" class="btn btn-secondary btn-lg shadow">

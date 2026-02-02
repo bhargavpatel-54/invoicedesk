@@ -7,7 +7,8 @@
 <!-- Page Header -->
 <div class="card border-0 shadow-sm card-dashboard mb-4">
     <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <!-- Desktop Header (Big Screen Only) -->
+        <div class="d-none d-md-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <h5 class="mb-2 fw-bold" style="background: linear-gradient(135deg, #1a202c 0%, #00c853 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                     <i class="bi bi-box-seam-fill me-2"></i>Inventory Management
@@ -34,6 +35,37 @@
                 <a href="{{ route('products.create') }}" class="btn btn-primary text-white btn-sm px-3 fw-semibold shadow">
                     <i class="bi bi-plus-lg me-1"></i> Add New
                 </a>
+            </div>
+        </div>
+
+        <!-- Mobile Header (Small Screen Only) -->
+        <div class="d-md-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 fw-bold" style="background: linear-gradient(135deg, #1a202c 0%, #00c853 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <i class="bi bi-box-seam-fill me-2"></i>Inventory
+                </h5>
+                <a href="{{ route('products.create') }}" class="btn btn-primary text-white btn-sm px-3 fw-semibold shadow">
+                    <i class="bi bi-plus-lg me-1"></i> New
+                </a>
+            </div>
+            <div class="d-flex gap-2 mb-3">
+                <form action="{{ route('products.index') }}" method="GET" class="d-flex gap-1 mb-0 flex-grow-1">
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="Search...">
+                    <button type="submit" class="btn btn-white border shadow-sm btn-sm">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+                <select name="stock_status" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 110px;">
+                    <option value="">Stock</option>
+                    <option value="in_stock" {{ request('stock_status') == 'in_stock' ? 'selected' : '' }}>In Stock</option>
+                    <option value="low_stock" {{ request('stock_status') == 'low_stock' ? 'selected' : '' }}>Low Stock</option>
+                    <option value="out_of_stock" {{ request('stock_status') == 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+                </select>
+            </div>
+            <div class="d-flex justify-content-around small text-muted bg-light p-2 rounded-3">
+                <span>Total: <b class="text-dark">{{ $totalCount }}</b></span>
+                <span>In: <b class="text-dark">{{ $inStockCount }}</b></span>
+                <span>Low: <b class="text-dark">{{ $lowStockCount }}</b></span>
             </div>
         </div>
     </div>

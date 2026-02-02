@@ -106,9 +106,9 @@
                                 <i class="bi bi-plus-circle-fill text-primary"></i> Create
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                <li><a class="dropdown-item" href="{{ route('invoices.create') }}">New Invoice</a></li>
-                                <li><a class="dropdown-item" href="{{ route('customers.create') }}">New Client</a></li>
-                                <li><a class="dropdown-item" href="{{ route('products.create') }}">New Product</a></li>
+                                <li><a class="dropdown-item" href="{{ route('invoices.create') }}"><i class="bi bi-file-earmark-plus"></i> New Invoice</a></li>
+                                <li><a class="dropdown-item" href="{{ route('customers.create') }}"><i class="bi bi-person-plus"></i> New Client</a></li>
+                                <li><a class="dropdown-item" href="{{ route('products.create') }}"><i class="bi bi-box-seam"></i> New Product</a></li>
                             </ul>
                         </div>
                     </li>
@@ -120,7 +120,7 @@
                                 F.Y. 2025-2026
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                <li><a class="dropdown-item" href="#">F.Y. 2024-2025</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-event"></i> F.Y. 2024-2025</a></li>
                             </ul>
                         </div>
                     </li>
@@ -136,13 +136,13 @@
                                 <i class="bi bi-person-circle fs-5"></i>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                <li><a class="dropdown-item" href="{{ route('dashboard') }}">Profile</a></li>
-                                <li><a class="dropdown-item" href="{{ route('report') }}">Reports</a></li>
+                                <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="bi bi-person-square"></i> Profile</a></li>
+                                <li><a class="dropdown-item" href="{{ route('report') }}"><i class="bi bi-bar-chart-fill"></i> Reports</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form action="{{ route('logout') }}" method="POST">
                                         @csrf
-                                        <button type="submit" class="dropdown-item text-danger">Logout</button>
+                                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
                                     </form>
                                 </li>
                             </ul>
