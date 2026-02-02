@@ -43,7 +43,12 @@ RUN composer install --no-dev --optimize-autoloader
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
 
+# Add entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Expose port
 EXPOSE 80
 
-# Start command is default for php-apache image
+# Use entrypoint script to run migrations and start Apache
+ENTRYPOINT ["docker-entrypoint.sh"]

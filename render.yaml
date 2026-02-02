@@ -3,7 +3,6 @@ services:
     name: invoicedesk
     runtime: docker
     plan: free
-    preDeployCommand: php artisan migrate --force
     envVars:
       - key: IS_RENDER
         value: true
