@@ -185,11 +185,20 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ email: email })
                 })
-                .then(response => response.json())
+                .then(async response => {
+                    const text = await response.text();
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON:', text);
+                        throw new Error('Invalid server response');
+                    }
+                })
                 .then(data => {
                     if (data.status === 'success') {
                         messageDiv.textContent = 'OTP is being sent! Please check your inbox (and spam folder) in a few seconds.';
@@ -207,7 +216,7 @@
                             }
                         }, 1000);
                     } else {
-                        messageDiv.textContent = data.message;
+                        messageDiv.textContent = data.message || 'Failed to send OTP.';
                         messageDiv.className = 'bg-red-50 text-red-500 p-4 rounded-lg text-sm mb-4 block';
                         btn.disabled = false;
                         btn.textContent = 'Send OTP';
@@ -215,7 +224,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    messageDiv.textContent = 'An error occurred. Please try again.';
+                    messageDiv.textContent = 'An error occurred while sending OTP. Please try again or check your internet connection.';
                     messageDiv.className = 'bg-red-50 text-red-500 p-4 rounded-lg text-sm mb-4 block';
                     btn.disabled = false;
                     btn.textContent = 'Send OTP';
