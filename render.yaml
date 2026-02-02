@@ -36,6 +36,30 @@ services:
         fromDatabase:
           name: invoicedesk-db
           property: password
+      - key: APP_URL
+        value: https://invoicedesk.onrender.com
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 465
+      - key: MAIL_USERNAME
+        value: bhargavpatel0580@gmail.com
+      - key: MAIL_PASSWORD
+        value: ktboemwbvkduwbci
+      - key: MAIL_ENCRYPTION
+        value: ssl
+      - key: MAIL_FROM_ADDRESS
+        value: bhargavpatel0580@gmail.com
+      - key: EMAILJS_SERVICE_ID
+        value: service_p9kug5r
+      - key: EMAILJS_TEMPLATE_ID
+        value: template_p5g316q
+      - key: EMAILJS_PUBLIC_KEY
+        value: ySHDFKSzT9ks9ixep
+      - key: EMAILJS_PRIVATE_KEY
+        value: LoKIIdW57ik6EWVZ4NZcbn
 
 databases:
   - name: invoicedesk-db

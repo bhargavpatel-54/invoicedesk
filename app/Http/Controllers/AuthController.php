@@ -112,6 +112,7 @@ class AuthController extends Controller
 
             if ($serviceId && $templateId && $publicKey) {
                 try {
+                    Log::info("Sending via EmailJS API...");
                     $response = Http::post('https://api.emailjs.com/api/v1.0/email/send', [
                         'service_id' => $serviceId,
                         'template_id' => $templateId,
