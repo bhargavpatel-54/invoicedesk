@@ -90,25 +90,63 @@ class AuthController extends Controller
         // Log the OTP for development/testing purposes
         Log::info("OTP for {$request->email}: {$otp}");
 
-        try {
-            // Send email SYNCHRONOUSLY - No queue worker needed!
-            Mail::to($request->email)->send(new \App\Mail\OtpMail($otp, $company->company_name));
-            
-            Log::info("OTP email sent successfully to {$request->email}");
-        } catch (\Exception $e) {
-            Log::error("Failed to send OTP email to {$request->email}: " . $e->getMessage());
-            
-            return response()->json([
-                'status' => 'error', 
-                'message' => 'Failed to send OTP. Please try again.',
-            ], 500);
-        }
+        // Use dispatch()->afterResponse() to send email without making the user wait
+        // This makes the UI feel "instant" while the mail sends in the background
+        dispatch(function () use ($otp, $company, $request) {
+            try {
+                Mail::to($request->email)->send(new \App\Mail\OtpMail($otp, $company->company_name));
+                Log::info("OTP email sent successfully to {$request->email}");
+            } catch (\Exception $e) {
+                Log::error("Failed to send OTP email to {$request->email}: " . $e->getMessage());
+                
+                // Fallback to EmailJS if SMTP fails and keys are available
+                $this->sendOtpViaEmailJS($request->email, $otp, $company->company_name);
+            }
+        })->afterResponse();
 
-        // Return success
+        // Return success immediately
         return response()->json([
             'status' => 'success', 
             'message' => 'OTP has been sent to your email!',
         ]);
+    }
+
+    /**
+     * Fallback method to send OTP via EmailJS API if SMTP fails
+     */
+    protected function sendOtpViaEmailJS($email, $otp, $companyName)
+    {
+        $serviceId = env('EMAILJS_SERVICE_ID');
+        $templateId = env('EMAILJS_TEMPLATE_ID');
+        $publicKey = env('EMAILJS_PUBLIC_KEY');
+        $privateKey = env('EMAILJS_PRIVATE_KEY');
+
+        if (!$serviceId || !$templateId || !$publicKey) {
+            return;
+        }
+
+        try {
+            $response = Http::post('https://api.emailjs.com/api/v1.0/email/send', [
+                'service_id' => $serviceId,
+                'template_id' => $templateId,
+                'user_id' => $publicKey,
+                'accessToken' => $privateKey,
+                'template_params' => [
+                    'otp' => $otp,
+                    'to_email' => $email,
+                    'company_name' => $companyName,
+                    'to_name' => $companyName,
+                ],
+            ]);
+
+            if ($response->successful()) {
+                Log::info("OTP email sent successfully via EmailJS to {$email}");
+            } else {
+                Log::error("EmailJS failed: " . $response->body());
+            }
+        } catch (\Exception $e) {
+            Log::error("EmailJS exception: " . $e->getMessage());
+        }
     }
 
     public function logout()

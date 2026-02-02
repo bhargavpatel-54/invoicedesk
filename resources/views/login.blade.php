@@ -178,6 +178,7 @@
 
                 // Disable button
                 btn.disabled = true;
+                const originalText = btn.textContent;
                 btn.textContent = 'Sending...';
 
                 fetch('{{ route("send.otp") }}', {
@@ -190,16 +191,27 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    messageDiv.textContent = data.message;
                     if (data.status === 'success') {
-                        messageDiv.className = 'bg-green-50 text-green-600 p-4 rounded-lg text-sm mb-4 block';
-                        // Show success message
-                        alert('OTP has been sent to your email! Please check your inbox.');
+                        messageDiv.textContent = 'OTP is being sent! Please check your inbox (and spam folder) in a few seconds.';
+                        messageDiv.className = 'bg-green-50 text-green-600 p-4 rounded-lg text-sm mb-4 block border border-green-200';
+                        
+                        // Start countdown for resend
+                        let seconds = 60;
+                        const timer = setInterval(() => {
+                            seconds--;
+                            btn.textContent = `Resend in ${seconds}s`;
+                            if (seconds <= 0) {
+                                clearInterval(timer);
+                                btn.disabled = false;
+                                btn.textContent = 'Send OTP';
+                            }
+                        }, 1000);
                     } else {
+                        messageDiv.textContent = data.message;
                         messageDiv.className = 'bg-red-50 text-red-500 p-4 rounded-lg text-sm mb-4 block';
+                        btn.disabled = false;
+                        btn.textContent = 'Send OTP';
                     }
-                    btn.disabled = false;
-                    btn.textContent = 'Send OTP';
                 })
                 .catch(error => {
                     console.error('Error:', error);
