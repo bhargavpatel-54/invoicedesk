@@ -97,14 +97,15 @@ class AuthController extends Controller
 
         // Use dispatch()->afterResponse() to send email without making the user wait
         dispatch(function () use ($otp, $companyName, $email) {
+            Log::info("Background task started: Sending OTP to $email");
             try {
                 Mail::to($email)->send(new \App\Mail\OtpMail($otp, $companyName));
-                Log::info("OTP email sent successfully to {$email}");
+                Log::info("SUCCESS: SMTP OTP email delivered to $email");
             } catch (\Exception $e) {
-                Log::error("Failed to send OTP email to {$email}: " . $e->getMessage());
+                Log::error("SMTP FAILED for $email: " . $e->getMessage());
                 
-                // Fallback to EmailJS if SMTP fails
-                // We recreate the logic here to avoid $this if serialization is an issue
+                // Fallback to EmailJS
+                Log::info("Attempting EmailJS fallback for $email...");
                 $serviceId = env('EMAILJS_SERVICE_ID');
                 $templateId = env('EMAILJS_TEMPLATE_ID');
                 $publicKey = env('EMAILJS_PUBLIC_KEY');
@@ -112,7 +113,7 @@ class AuthController extends Controller
 
                 if ($serviceId && $templateId && $publicKey) {
                     try {
-                        Http::post('https://api.emailjs.com/api/v1.0/email/send', [
+                        $response = Http::post('https://api.emailjs.com/api/v1.0/email/send', [
                             'service_id' => $serviceId,
                             'template_id' => $templateId,
                             'user_id' => $publicKey,
@@ -124,10 +125,17 @@ class AuthController extends Controller
                                 'to_name' => $companyName,
                             ],
                         ]);
-                        Log::info("OTP email sent successfully via EmailJS to {$email}");
+                        
+                        if ($response->successful()) {
+                            Log::info("SUCCESS: EmailJS OTP delivered to $email");
+                        } else {
+                            Log::error("EmailJS FAILED for $email: " . $response->body());
+                        }
                     } catch (\Exception $ee) {
-                        Log::error("EmailJS fallback failed: " . $ee->getMessage());
+                        Log::error("EmailJS CRITICAL ERROR for $email: " . $ee->getMessage());
                     }
+                } else {
+                    Log::error("EmailJS skip: Missing keys in .env");
                 }
             }
         })->afterResponse();
