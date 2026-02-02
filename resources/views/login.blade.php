@@ -180,6 +180,12 @@
                 btn.disabled = true;
                 const originalText = btn.textContent;
                 btn.textContent = 'Sending...';
+                
+                // Show a "please wait" message after 3 seconds
+                const slowNote = setTimeout(() => {
+                    messageDiv.textContent = 'Connecting to mail server... this usually takes 5-8 seconds on free hosting.';
+                    messageDiv.className = 'bg-blue-50 text-blue-500 p-4 rounded-lg text-sm mb-4 block border border-blue-200';
+                }, 3000);
 
                 fetch('{{ route("send.otp") }}', {
                     method: 'POST',
@@ -191,6 +197,7 @@
                     body: JSON.stringify({ email: email })
                 })
                 .then(async response => {
+                    clearTimeout(slowNote);
                     const text = await response.text();
                     try {
                         return JSON.parse(text);
@@ -223,6 +230,7 @@
                     }
                 })
                 .catch(error => {
+                    clearTimeout(slowNote);
                     console.error('Error:', error);
                     messageDiv.textContent = 'An error occurred while sending OTP. Please try again or check your internet connection.';
                     messageDiv.className = 'bg-red-50 text-red-500 p-4 rounded-lg text-sm mb-4 block';
