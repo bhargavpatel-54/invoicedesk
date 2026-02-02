@@ -1,10 +1,9 @@
 services:
   - type: web
     name: invoicedesk
-    env: php
+    runtime: docker
     plan: free
-    buildCommand: ./render-build.sh
-    startCommand: apachectl -D FOREGROUND
+    preDeployCommand: php artisan migrate --force
     envVars:
       - key: IS_RENDER
         value: true
@@ -14,8 +13,6 @@ services:
         value: false
       - key: LOG_CHANNEL
         value: stderr
-      - key: DOCUMENT_ROOT
-        value: public
       - key: APP_KEY
         generateValue: true
       - key: DB_CONNECTION
@@ -31,7 +28,7 @@ services:
       - key: DB_DATABASE
         fromDatabase:
           name: invoicedesk-db
-          property: name
+          property: database
       - key: DB_USERNAME
         fromDatabase:
           name: invoicedesk-db
