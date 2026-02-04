@@ -43,13 +43,13 @@ services:
       - key: MAIL_HOST
         value: smtp.gmail.com
       - key: MAIL_PORT
-        value: 465
+        value: 587
       - key: MAIL_USERNAME
         value: bhargavpatel0580@gmail.com
       - key: MAIL_PASSWORD
         sync: false
       - key: MAIL_ENCRYPTION
-        value: ssl
+        value: tls
       - key: MAIL_FROM_ADDRESS
         value: bhargavpatel0580@gmail.com
       - key: EMAILJS_SERVICE_ID
@@ -57,7 +57,7 @@ services:
       - key: EMAILJS_TEMPLATE_ID
         value: template_p5g316q
       - key: EMAILJS_PUBLIC_KEY
-        value: ySHDFKSzT9ks9ixep
+        value: Bj0pRNasz5WltnwWw
       - key: EMAILJS_PRIVATE_KEY
         sync: false
 

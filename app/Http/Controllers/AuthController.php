@@ -73,77 +73,70 @@ class AuthController extends Controller
 
     public function sendOtp(Request $request)
     {
-        Log::info("sendOtp called for email: " . $request->email);
-        $request->validate(['email' => 'required|email']);
-        
-        $company = Company::where('email', $request->email)->first();
-
-        if (!$company) {
-            return response()->json(['status' => 'error', 'message' => 'Email address not found.'], 404);
-        }
-
-        // Generate Random OTP
-        $otp = rand(1000, 9999);
-        
-        // Store in Cache for 5 minutes
-        Cache::put('otp_' . $request->email, $otp, 300);
-
-        // Log the OTP for development/testing purposes
-        Log::info("OTP for {$request->email}: {$otp}");
-
-        // Capture values to avoid using $request or complex objects in the closure
-        $email = $request->email;
-        $companyName = $company->company_name;
-
-        // Send email and handle fallback
         try {
-            Log::info("Attempting to send OTP via SMTP to $email");
-            Mail::to($email)->send(new \App\Mail\OtpMail($otp, $companyName));
-            Log::info("OTP successfully sent via SMTP to $email");
-        } catch (\Exception $e) {
-            Log::error("SMTP Error for $email: " . $e->getMessage());
+            $request->validate(['email' => 'required|email']);
+            $email = $request->email;
             
-            // Fallback to EmailJS
-            Log::info("Switching to EmailJS fallback for $email");
-            $serviceId = env('EMAILJS_SERVICE_ID');
-            $templateId = env('EMAILJS_TEMPLATE_ID');
-            $publicKey = env('EMAILJS_PUBLIC_KEY');
-            $privateKey = env('EMAILJS_PRIVATE_KEY');
+            Log::info("sendOtp called for email: " . $email);
+            
+            $company = Company::where('email', $email)->first();
 
-            if ($serviceId && $templateId && $publicKey) {
-                try {
-                    Log::info("Sending via EmailJS API...");
-                    $response = Http::post('https://api.emailjs.com/api/v1.0/email/send', [
-                        'service_id' => $serviceId,
-                        'template_id' => $templateId,
-                        'user_id' => $publicKey,
-                        'accessToken' => $privateKey,
-                        'template_params' => [
-                            'otp' => $otp,
-                            'to_email' => $email,
-                            'company_name' => $companyName,
-                            'to_name' => $companyName,
-                        ],
-                    ]);
-                    
-                    if ($response->successful()) {
-                        Log::info("OTP successfully sent via EmailJS to $email");
-                    } else {
-                        Log::error("EmailJS API Error for $email: " . $response->body());
-                    }
-                } catch (\Exception $ee) {
-                    Log::error("EmailJS Fallback failed for $email: " . $ee->getMessage());
-                }
-            } else {
-                Log::error("EmailJS fallback skipped: Missing configuration for $email");
+            if (!$company) {
+                Log::warning("OTP requested for non-existent email: " . $email);
+                return response()->json(['status' => 'error', 'message' => 'Email address not found.'], 404);
             }
-        }
 
-        // Return success immediately
-        return response()->json([
-            'status' => 'success', 
-            'message' => 'OTP has been sent to your email!',
-        ]);
+            // Generate Random OTP
+            $otp = rand(1000, 9999);
+            
+            // Store in Cache for 5 minutes
+            Cache::put('otp_' . $email, $otp, 300);
+
+            // Log the OTP for development/testing purposes
+            Log::info("Generated OTP for {$email}: {$otp}");
+
+            $companyName = $company->company_name;
+            $sentStatus = false;
+            $errorMessage = '';
+
+            // 1. Attempt SMTP
+            try {
+                Log::info("Attempting to send OTP via SMTP to $email");
+                Mail::to($email)->send(new \App\Mail\OtpMail($otp, $companyName));
+                Log::info("OTP successfully sent via SMTP to $email");
+                $sentStatus = true;
+            } catch (\Exception $e) {
+                $errorMessage = "SMTP Error: " . $e->getMessage();
+                Log::error("SMTP Error for $email: " . $e->getMessage());
+                
+                // 2. Fallback to EmailJS
+                Log::info("Switching to EmailJS fallback for $email");
+                $result = $this->sendOtpViaEmailJS($email, $otp, $companyName);
+                if ($result['success']) {
+                    $sentStatus = true;
+                } else {
+                    $errorMessage .= " | EmailJS Error: " . $result['message'];
+                }
+            }
+
+            if ($sentStatus) {
+                return response()->json([
+                    'status' => 'success', 
+                    'message' => 'OTP has been sent to your email!',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to send OTP. Details: ' . $errorMessage,
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            Log::error("General error in sendOtp: " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'A server error occurred. Details: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -157,7 +150,7 @@ class AuthController extends Controller
         $privateKey = env('EMAILJS_PRIVATE_KEY');
 
         if (!$serviceId || !$templateId || !$publicKey) {
-            return;
+            return ['success' => false, 'message' => 'Missing EmailJS configuration'];
         }
 
         try {
@@ -176,11 +169,14 @@ class AuthController extends Controller
 
             if ($response->successful()) {
                 Log::info("OTP email sent successfully via EmailJS to {$email}");
+                return ['success' => true];
             } else {
                 Log::error("EmailJS failed: " . $response->body());
+                return ['success' => false, 'message' => $response->body()];
             }
         } catch (\Exception $e) {
             Log::error("EmailJS exception: " . $e->getMessage());
+            return ['success' => false, 'message' => $e->getMessage()];
         }
     }
 
