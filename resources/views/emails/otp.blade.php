@@ -119,7 +119,7 @@
             <div class="otp-container">
                 <div class="otp-label">Your OTP Code</div>
                 <div class="otp-code">{{ $otp }}</div>
-                <div class="expiry-notice">⏱️ This code will expire in 5 minutes</div>
+                <div class="expiry-notice">⏱️ This code will expire in 15 minutes (at {{ $validTill }})</div>
             </div>
             
             <div class="warning">

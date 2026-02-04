@@ -103,7 +103,9 @@ class AuthController extends Controller
             if (!$isRender) {
                 try {
                     Log::info("Attempting to send OTP via SMTP to $email");
-                    Mail::to($email)->send(new \App\Mail\OtpMail($otp, $companyName));
+                    // Calculate expiry time for consistency (15 minutes from now)
+                    $validTill = now()->addMinutes(15)->format('h:i A');
+                    Mail::to($email)->send(new \App\Mail\OtpMail($otp, $companyName, $validTill));
                     Log::info("OTP successfully sent via SMTP to $email");
                     $sentStatus = true;
                 } catch (\Exception $e) {

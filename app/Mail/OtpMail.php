@@ -14,14 +14,16 @@ class OtpMail extends Mailable
 
     public $otp;
     public $companyName;
+    public $validTill;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($otp, $companyName)
+    public function __construct($otp, $companyName, $validTill = null)
     {
         $this->otp = $otp;
         $this->companyName = $companyName;
+        $this->validTill = $validTill ?? now()->addMinutes(15)->format('h:i A');
     }
 
     /**
