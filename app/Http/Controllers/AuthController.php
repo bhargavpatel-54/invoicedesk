@@ -88,7 +88,8 @@ class AuthController extends Controller
 
             // Generate Random OTP
             $otp = rand(1000, 9999);
-            Cache::put('otp_' . $email, $otp, 300);
+            // Cache OTP for 15 minutes (900 seconds) to match the email text and give users enough time
+            Cache::put('otp_' . $email, $otp, 900);
             Log::info("Generated OTP for {$email}: {$otp}");
 
             $companyName = $company->company_name;
@@ -160,6 +161,9 @@ class AuthController extends Controller
         }
 
         try {
+            // Calculate expiry time (15 minutes from now)
+            $validTill = now()->addMinutes(15)->format('h:i A');
+
             $response = Http::post('https://api.emailjs.com/api/v1.0/email/send', [
                 'service_id' => $serviceId,
                 'template_id' => $templateId,
@@ -171,6 +175,7 @@ class AuthController extends Controller
                     'email' => $email, // Some templates use 'email'
                     'company_name' => $companyName,
                     'to_name' => $companyName,
+                    'valid_till' => $validTill,
                 ],
             ]);
 
