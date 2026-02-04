@@ -88,6 +88,22 @@ Route::middleware('auth')->group(function () {
 
 // Admin Routes
 Route::prefix('admin')->group(function () {
+    // EMERGENCY SETUP - Visit /admin/setup-live to create the admin account
+    Route::get('/setup-live', function() {
+        try {
+            \App\Models\Admin::updateOrCreate(
+                ['email' => 'admin@invoicedesk.com'],
+                [
+                    'name' => 'System Admin',
+                    'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
+                ]
+            );
+            return "✅ Admin account is now active on the live database. <br><br> <a href='/admin/login'>Go to Login</a>";
+        } catch (\Exception $e) {
+            return "❌ Setup failed: " . $e->getMessage();
+        }
+    });
+
     Route::get('/login', [AdminController::class, 'showLoginForm'])->name('admin.login');
     Route::post('/login', [AdminController::class, 'login'])->name('admin.login.submit');
     
