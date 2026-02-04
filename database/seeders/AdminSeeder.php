@@ -15,8 +15,8 @@ class AdminSeeder extends Seeder
         \App\Models\Admin::updateOrCreate(
             ['email' => 'admin@invoicedesk.com'],
             [
-                'name' => 'Admin',
-                'password' => 'admin123',
+                'name' => 'System Admin',
+                'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
             ]
         );
     }
