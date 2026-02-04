@@ -47,7 +47,7 @@ services:
       - key: MAIL_USERNAME
         value: bhargavpatel0580@gmail.com
       - key: MAIL_PASSWORD
-        value: ktboemwbvkduwbci
+        sync: false
       - key: MAIL_ENCRYPTION
         value: ssl
       - key: MAIL_FROM_ADDRESS
@@ -59,7 +59,7 @@ services:
       - key: EMAILJS_PUBLIC_KEY
         value: ySHDFKSzT9ks9ixep
       - key: EMAILJS_PRIVATE_KEY
-        value: LoKIIdW57ik6EWVZ4NZcbn
+        sync: false
 
 databases:
   - name: invoicedesk-db
