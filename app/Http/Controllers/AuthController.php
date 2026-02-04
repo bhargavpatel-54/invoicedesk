@@ -168,6 +168,7 @@ class AuthController extends Controller
                 'template_params' => [
                     'otp' => $otp,
                     'to_email' => $email,
+                    'email' => $email, // Some templates use 'email'
                     'company_name' => $companyName,
                     'to_name' => $companyName,
                 ],
