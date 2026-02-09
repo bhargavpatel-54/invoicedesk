@@ -100,56 +100,63 @@
                 @csrf
                 <h2 class="text-3xl font-semibold text-gray-800">Create Account</h2>
 
-                <!-- Validation Errors -->
-                @if ($errors->any())
-                    <div class="bg-red-50 text-red-500 p-4 rounded-lg text-sm">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+                <!-- Validation Errors removed from top -->
+
 
                 <!-- Company Name -->
                 <div class="relative group">
                     <label for="company_name" class="block text-sm font-medium text-gray-500 mb-1">Company Name<span class="text-red-500">*</span></label>
-                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all">
+                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all @error('company_name') border-red-500 @enderror">
                         <input type="text" id="company_name" name="company_name" value="{{ old('company_name') }}" class="w-full p-3 bg-gray-50 outline-none text-gray-700 placeholder-gray-400" placeholder="Enter your company name" required>
                     </div>
+                    @error('company_name')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- GST No -->
                 <div class="relative group">
                     <label for="gst_no" class="block text-sm font-medium text-gray-500 mb-1">GST No<span class="text-red-500">*</span></label>
-                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all">
-                        <input type="text" id="gst_no" name="gst_no" value="{{ old('gst_no') }}" class="w-full p-3 bg-gray-50 outline-none text-gray-700 placeholder-gray-400" placeholder="Enter GST Number" style="text-transform: uppercase;" required>
+                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all @error('gst_no') border-red-500 @enderror">
+                        <input type="text" id="gst_no" name="gst_no" value="{{ old('gst_no') }}" class="w-full p-3 bg-gray-50 outline-none text-gray-700 placeholder-gray-400" placeholder="Enter 15-digit GST Number" style="text-transform: uppercase;" required maxlength="15">
                     </div>
+                    @error('gst_no')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Address -->
                 <div class="relative group">
                     <label for="address" class="block text-sm font-medium text-gray-500 mb-1">Address<span class="text-red-500">*</span></label>
-                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all">
+                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all @error('address') border-red-500 @enderror">
                         <textarea id="address" name="address" rows="3" class="w-full p-3 bg-gray-50 outline-none text-gray-700 placeholder-gray-400 resize-none" placeholder="Enter your full address" required>{{ old('address') }}</textarea>
                     </div>
+                    @error('address')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Email Address (Required) -->
                 <div class="relative group">
                      <label for="email" class="block text-sm font-medium text-gray-500 mb-1">Email Address<span class="text-red-500">*</span></label>
-                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all">
-                        <input type="email" id="email" name="email" value="{{ old('email') }}" class="w-full p-3 bg-gray-50 outline-none text-gray-700 placeholder-gray-400" placeholder="name@company.com" required>
+                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all @error('email') border-red-500 @enderror">
+                        <input type="email" id="email" name="email" value="{{ old('email') }}" class="w-full p-3 bg-gray-50 outline-none text-gray-700 placeholder-gray-400" placeholder="name@company.com" required oninput="this.value = this.value.toLowerCase()">
                     </div>
+                    @error('email')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Phone Number (Optional but RECOMMENDED) -->
                 <div class="relative group">
                     <label for="phone" class="block text-sm font-medium text-gray-500 mb-1">Phone Number<span class="text-red-500">*</span></label>
-                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all">
+                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all @error('phone') border-red-500 @enderror">
                         <span class="pl-4 text-gray-500 font-medium">+91</span>
                         <input type="text" id="phone" name="phone" value="{{ old('phone') }}" class="w-full p-3 bg-gray-50 outline-none text-gray-700 placeholder-gray-400" placeholder="10-digit number" required>
                     </div>
+                    @error('phone')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Business Type Selector -->

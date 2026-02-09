@@ -24,6 +24,8 @@ class AuthController extends Controller
             'email' => 'required|email|max:255|unique:companies', // Email is now required and unique
         ]);
 
+        $validated['email'] = strtolower($validated['email']);
+
         $company = Company::create($validated);
 
         return redirect()->route('login')->with('success', 'Account created successfully! Please login with your email.');
@@ -36,7 +38,8 @@ class AuthController extends Controller
             'otp' => 'required|string',
         ]);
 
-        $company = Company::where('email', $request->email)->first();
+        $email = strtolower($request->email);
+        $company = Company::where('email', $email)->first();
 
         if (!$company) {
             return back()->withErrors(['email' => 'No account found with this email address.']);
@@ -75,7 +78,7 @@ class AuthController extends Controller
     {
         try {
             $request->validate(['email' => 'required|email']);
-            $email = $request->email;
+            $email = strtolower($request->email);
             
             Log::info("sendOtp called for email: " . $email);
             

@@ -45,15 +45,8 @@
     @csrf
     @method('PUT')
     
-    @if ($errors->any())
-        <div class="alert alert-danger border-0 shadow-sm mb-4">
-            <ul class="mb-0 small">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <!-- Top Errors removed for inline display -->
+
     
     <div class="row g-4">
         <!-- Basic Info -->
@@ -68,6 +61,9 @@
                         <div class="col-md-12">
                             <label class="form-label fw-bold small text-muted uppercase">Product Name *</label>
                             <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $product->name) }}" required>
+                            @error('name')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
@@ -83,11 +79,17 @@
                         <div class="col-6 col-md-4">
                             <label class="form-label fw-bold small text-muted uppercase">Code</label>
                             <input type="text" name="product_code" class="form-control @error('product_code') is-invalid @enderror" value="{{ old('product_code', $product->product_code) }}">
+                            @error('product_code')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-6 col-md-4">
                             <label class="form-label fw-bold small text-muted uppercase">SKU</label>
                             <input type="text" name="sku" class="form-control @error('sku') is-invalid @enderror" value="{{ old('sku', $product->sku) }}">
+                            @error('sku')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-12 col-md-4">
@@ -119,6 +121,9 @@
                             <span class="input-group-text border-end-0 bg-light fw-bold">₹</span>
                             <input type="number" step="0.01" name="selling_price" class="form-control @error('selling_price') is-invalid @enderror" value="{{ old('selling_price', $product->selling_price) }}" required>
                         </div>
+                        @error('selling_price')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="mb-3">
@@ -131,13 +136,16 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-muted uppercase">Tax Rate *</label>
-                        <select name="tax_rate" class="form-select" required>
+                        <select name="tax_rate" class="form-select @error('tax_rate') is-invalid @enderror" required>
                             <option value="0" {{ old('tax_rate', $product->tax_rate) == 0 ? 'selected' : '' }}>0% (Exempt)</option>
                             <option value="5" {{ old('tax_rate', $product->tax_rate) == 5 ? 'selected' : '' }}>5%</option>
                             <option value="12" {{ old('tax_rate', $product->tax_rate) == 12 ? 'selected' : '' }}>12%</option>
                             <option value="18" {{ old('tax_rate', $product->tax_rate) == 18 ? 'selected' : '' }}>18%</option>
                             <option value="28" {{ old('tax_rate', $product->tax_rate) == 28 ? 'selected' : '' }}>28%</option>
                         </select>
+                        @error('tax_rate')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <label class="form-label fw-bold small text-muted uppercase mb-2">Tax Type</label>
@@ -163,7 +171,10 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-muted uppercase">Unit *</label>
-                        <input type="text" name="unit" class="form-control" value="{{ old('unit', $product->unit) }}" required>
+                        <input type="text" name="unit" class="form-control @error('unit') is-invalid @enderror" value="{{ old('unit', $product->unit) }}" required>
+                        @error('unit')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="mb-4">

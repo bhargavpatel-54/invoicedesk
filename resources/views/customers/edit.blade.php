@@ -47,15 +47,8 @@
             @csrf
             @method('PUT')
             
-            @if ($errors->any())
-                <div class="alert alert-danger border-0 shadow-sm mb-4">
-                    <ul class="mb-0 small">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            <!-- Top Errors removed for inline display -->
+
 
             <div class="row g-4">
                 <!-- Type Selection -->
@@ -63,18 +56,21 @@
                     <label class="fw-bold mb-3 d-block text-muted extra-small uppercase">Engagement Type</label>
                     <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-3">
                         <div class="custom-radio-box flex-fill flex-md-initial" style="min-width: 150px;">
-                            <input class="form-check-input" type="radio" name="type" id="type_customer" value="customer" {{ (old('type') ?? $customer->type) == 'customer' ? 'checked' : '' }}>
+                            <input class="form-check-input" type="radio" name="type" id="type_customer" value="customer" {{ (old('type', $customer->type)) == 'customer' ? 'checked' : '' }}>
                             <label class="form-check-label px-4 py-3 rounded-3 border w-100 text-center cursor-pointer shadow-sm" for="type_customer">
                                 <i class="bi bi-person me-2"></i>Customer
                             </label>
                         </div>
                         <div class="custom-radio-box flex-fill flex-md-initial" style="min-width: 150px;">
-                            <input class="form-check-input" type="radio" name="type" id="type_vendor" value="vendor" {{ (old('type') ?? $customer->type) == 'vendor' ? 'checked' : '' }}>
+                            <input class="form-check-input" type="radio" name="type" id="type_vendor" value="vendor" {{ (old('type', $customer->type)) == 'vendor' ? 'checked' : '' }}>
                             <label class="form-check-label px-4 py-3 rounded-3 border w-100 text-center cursor-pointer shadow-sm" for="type_vendor">
                                 <i class="bi bi-shop me-2"></i>Vendor
                             </label>
                         </div>
                     </div>
+                    @error('type')
+                        <div class="text-danger small mt-1 text-center text-md-start">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-12"><hr class="my-0 opacity-25"></div>
@@ -82,16 +78,25 @@
                 <!-- Basic Info -->
                 <div class="col-md-6">
                     <label class="form-label fw-bold small text-muted uppercase">Business Name *</label>
-                    <input type="text" name="business_name" class="form-control" value="{{ old('business_name', $customer->business_name) }}" required>
+                    <input type="text" name="business_name" class="form-control @error('business_name') is-invalid @enderror" value="{{ old('business_name', $customer->business_name) }}" required>
+                    @error('business_name')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold small text-muted uppercase">Contact Person *</label>
-                    <input type="text" name="contact_person" class="form-control" value="{{ old('contact_person', $customer->contact_person) }}" required>
+                    <input type="text" name="contact_person" class="form-control @error('contact_person') is-invalid @enderror" value="{{ old('contact_person', $customer->contact_person) }}" required>
+                    @error('contact_person')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label fw-bold small text-muted uppercase">Phone *</label>
-                    <input type="tel" name="phone" class="form-control" value="{{ old('phone', $customer->phone) }}" required>
+                    <input type="tel" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $customer->phone) }}" required>
+                    @error('phone')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold small text-muted uppercase">Alt Phone</label>
@@ -99,12 +104,18 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold small text-muted uppercase">Email Address</label>
-                    <input type="email" name="email" class="form-control" value="{{ old('email', $customer->email) }}">
+                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $customer->email) }}">
+                    @error('email')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-6 col-md-6">
                     <label class="form-label fw-bold small text-muted uppercase">GSTIN</label>
-                    <input type="text" name="gst_no" class="form-control uppercase" value="{{ old('gst_no', $customer->gst_no) }}">
+                    <input type="text" name="gst_no" class="form-control uppercase @error('gst_no') is-invalid @enderror" value="{{ old('gst_no', $customer->gst_no) }}" maxlength="15">
+                    @error('gst_no')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="col-6 col-md-6">
                     <label class="form-label fw-bold small text-muted uppercase">PAN Number</label>
@@ -116,7 +127,10 @@
                 <!-- Address Info -->
                 <div class="col-md-4">
                     <label class="form-label fw-bold small text-muted uppercase">Street Address *</label>
-                    <input type="text" name="billing_address" class="form-control" value="{{ old('billing_address', $customer->billing_address) }}" required>
+                    <input type="text" name="billing_address" class="form-control @error('billing_address') is-invalid @enderror" value="{{ old('billing_address', $customer->billing_address) }}" required>
+                    @error('billing_address')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold small text-muted uppercase">Area / Building</label>
@@ -128,15 +142,24 @@
                 </div>
                 <div class="col-4 col-md-4">
                     <label class="form-label fw-bold small text-muted uppercase">City *</label>
-                    <input type="text" name="city" class="form-control" value="{{ old('city', $customer->city) }}" required>
+                    <input type="text" name="city" class="form-control @error('city') is-invalid @enderror" value="{{ old('city', $customer->city) }}" required>
+                    @error('city')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="col-4 col-md-4">
                     <label class="form-label fw-bold small text-muted uppercase">State *</label>
-                    <input type="text" name="state" class="form-control" value="{{ old('state', $customer->state) }}" required>
+                    <input type="text" name="state" class="form-control @error('state') is-invalid @enderror" value="{{ old('state', $customer->state) }}" required>
+                    @error('state')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
                 <div class="col-4 col-md-4">
                     <label class="form-label fw-bold small text-muted uppercase">Pincode *</label>
-                    <input type="text" name="pincode" class="form-control" value="{{ old('pincode', $customer->pincode) }}" required>
+                    <input type="text" name="pincode" class="form-control @error('pincode') is-invalid @enderror" value="{{ old('pincode', $customer->pincode) }}" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    @error('pincode')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-12"><hr class="my-0 opacity-25"></div>
